@@ -101,6 +101,8 @@ namespace Foundatio.AzureServiceBus.Tests.Messaging {
         }
 
         [Fact(Skip = "This method is failing because subscribers are not getting called in the said timed duration.")]
+        // Range:  (50 - 5000)
+        // Actual: 7204.4162
         public override Task CanSendDelayedMessageAsync() {
             return base.CanSendDelayedMessageAsync();
         }
@@ -180,7 +182,7 @@ namespace Foundatio.AzureServiceBus.Tests.Messaging {
             }
         }
 
-        [Fact(Skip = "Throwing 429 error code. Bug logged")]
+        [Fact]
         public override Task CanReceiveMessagesConcurrentlyAsync() {
             return base.CanReceiveMessagesConcurrentlyAsync();
         }

@@ -47,11 +47,17 @@ namespace Foundatio.Messaging {
                 try {
                     var sbManagementClient = await GetManagementClient().AnyContext();
                     if (sbManagementClient != null) {
-                        await sbManagementClient.Subscriptions.CreateOrUpdateAsync(_options.ResourceGroupName, _options.NameSpaceName,
-                            _options.Topic, _subscriptionName, CreateSubscriptionDescription()).AnyContext();
+                        await Run.WithRetriesAsync(
+                            () => sbManagementClient.Subscriptions.CreateOrUpdateAsync(_options.ResourceGroupName,
+                                _options.NameSpaceName, _options.Topic, _subscriptionName,
+                                CreateSubscriptionDescription(), cancellationToken),
+                            logger: _logger, cancellationToken: cancellationToken).AnyContext();
                     }
                 }
-                catch (ErrorResponseException) { }
+                catch (ErrorResponseException e) {
+                    if (_logger.IsEnabled(LogLevel.Error)) _logger.LogError(e, "Error creating subcscriptions Entity");
+                    throw;
+                }
 
                 // Look into message factory with multiple recievers so more than one connection is made and managed....
                 _subscriptionClient = new SubscriptionClient(_options.ConnectionString, _options.Topic, _subscriptionName, _options.ReceiveMode, _options.SubscriptionRetryPolicy);
@@ -114,10 +120,11 @@ namespace Foundatio.Messaging {
                 try {
                     var sbManagementClient = await GetManagementClient().AnyContext();
                     if (sbManagementClient != null) {
-                        await sbManagementClient.Topics.CreateOrUpdateAsync(_options.ResourceGroupName,
-                                _options.NameSpaceName, _options.Topic, CreateTopicDescription(), cancellationToken)
-                            .AnyContext();
-
+                        await Run.WithRetriesAsync(
+                            () => sbManagementClient.Topics.CreateOrUpdateAsync(_options.ResourceGroupName,
+                                _options.NameSpaceName, _options.Topic, CreateTopicDescription(), cancellationToken),
+                            logger: _logger,
+                            cancellationToken: cancellationToken).AnyContext();
                     }
                 }
                 catch (ErrorResponseException e) {
